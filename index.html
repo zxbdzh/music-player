@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>音乐馆 - 全屏沉浸模式</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
-    <link rel="stylesheet" href="./assets/libs/aplayer/music.css">
+    <link rel="stylesheet" href="assets/libs/aplayer/APlayer.min.css">
+    <link rel="stylesheet" href="assets/libs/aplayer/music.css">
 
     <style>
         /* ---------------- 1. 所有图标强制变白（优先级拉满） ---------------- */
@@ -167,7 +167,7 @@
     <div id="anMusic-page-meting"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+<script src="assets/libs/aplayer/APlayer.min.js"></script>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -307,7 +307,7 @@ api="https://api.i-meto.com/meting/api?server=:server&type=:type&id=:id"></metin
     }
 
     const script = document.createElement('script');
-    script.src = "https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js";
+    script.src = "assets/libs/Meting.min.js";
     script.onload = start;
     document.body.appendChild(script);
 </script>
