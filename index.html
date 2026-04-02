@@ -163,22 +163,38 @@
         let html = '';
 
         lrcText.split('\n').forEach(line => {
-            const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+            // 支持 [mm:ss.xx] 和 [mm:ss:xx] (厘秒格式) 两种格式
+            let match = line.match(/\[(\d+):(\d+):(\d+)\](.*)/);
+            let time;
+            let text;
+
             if (match) {
-                const time = parseInt(match[1]) * 60 + parseFloat(match[2]);
-                let text = match[3].trim();
-                if (text) {
-                    // 拆分逻辑：支持中英文括号
-                    let mainText = text;
-                    let transText = "";
-                    const splitMatch = text.match(/(.*)[(\uff08](.*)[)\uff09]/);
-                    if (splitMatch) {
-                        mainText = splitMatch[1].trim();
-                        transText = splitMatch[2].trim();
-                    }
-                    lrcData.push({ time });
-                    html += `<p>${mainText}${transText ? `<span class="lrc-trans">${transText}</span>` : ''}</p>`;
+                // [mm:ss:xx] 格式 (厘秒)
+                const minutes = parseInt(match[1]);
+                const seconds = parseInt(match[2]);
+                const centiseconds = parseInt(match[3]);
+                time = minutes * 60 + seconds + centiseconds / 100;
+                text = match[4].trim();
+            } else {
+                // [mm:ss.xx] 格式
+                match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+                if (match) {
+                    time = parseInt(match[1]) * 60 + parseFloat(match[2]);
+                    text = match[3].trim();
                 }
+            }
+
+            if (match && text) {
+                // 拆分逻辑：支持中英文括号
+                let mainText = text;
+                let transText = "";
+                const splitMatch = text.match(/(.*)[(\uff08](.*)[)\uff09]/);
+                if (splitMatch) {
+                    mainText = splitMatch[1].trim();
+                    transText = splitMatch[2].trim();
+                }
+                lrcData.push({ time });
+                html += `<p>${mainText}${transText ? `<span class="lrc-trans">${transText}</span>` : ''}</p>`;
             }
         });
         container.innerHTML = html;
