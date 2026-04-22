@@ -414,7 +414,7 @@
     /* 注入 */
     document.getElementById('anMusic-page-meting').innerHTML =
         `<meting-js id="${musicId}" server="${server}" type="song" lrc-type="3"
-api="https://api.zxbdwy.online/meting/?server=:server&type=:type&id=:id"></meting-js>`;
+api="https://api.zxbdwy.online/meting/api?server=:server&type=:type&id=:id"></meting-js>`;
 
     function start(){
         const mJS = document.querySelector('meting-js');
