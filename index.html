@@ -1,451 +1,544 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>音乐馆 - 全屏沉浸模式</title>
 
-    <link rel="stylesheet" href="assets/libs/aplayer/APlayer.min.css">
-    <link rel="stylesheet" href="assets/libs/aplayer/music.css">
+    <link rel="stylesheet" href="assets/libs/aplayer/APlayer.min.css" />
+    <link rel="stylesheet" href="assets/libs/aplayer/music.css" />
 
     <style>
-        /* ---------------- 加载动画样式 ---------------- */
-        .loading-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #0d0d0d;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 1;
-            transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
+      /* ---------------- 加载动画样式 ---------------- */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0d0d0d;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 1;
+        transition:
+          opacity 0.6s ease-out,
+          visibility 0.6s ease-out;
+      }
+      .loading-overlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .loading-ring {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .loading-ring::before,
+      .loading-ring::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      }
+      .loading-ring::before {
+        width: 100%;
+        height: 100%;
+        border: 3px solid transparent;
+        border-top-color: #ef50a8;
+        box-shadow:
+          0 0 20px rgba(239, 80, 168, 0.5),
+          inset 0 0 20px rgba(239, 80, 168, 0.1);
+      }
+      .loading-ring::after {
+        width: 85%;
+        height: 85%;
+        border: 2px solid transparent;
+        border-bottom-color: #ff8fda;
+        animation-direction: reverse;
+        animation-duration: 1.5s;
+        box-shadow: 0 0 15px rgba(255, 143, 218, 0.4);
+      }
+      @keyframes pulse-ring {
+        0% {
+          transform: rotate(0deg);
         }
-        .loading-overlay.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
+        100% {
+          transform: rotate(360deg);
         }
-        .loading-ring {
-            position: relative;
-            width: 120px; height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+      }
+      .loading-wave {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        height: 30px;
+      }
+      .loading-wave span {
+        display: block;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #ef50a8, #ff8fda);
+        border-radius: 2px;
+        animation: wave 1s ease-in-out infinite;
+      }
+      .loading-wave span:nth-child(1) {
+        animation-delay: 0s;
+        height: 40%;
+      }
+      .loading-wave span:nth-child(2) {
+        animation-delay: 0.1s;
+        height: 70%;
+      }
+      .loading-wave span:nth-child(3) {
+        animation-delay: 0.2s;
+        height: 100%;
+      }
+      .loading-wave span:nth-child(4) {
+        animation-delay: 0.3s;
+        height: 70%;
+      }
+      .loading-wave span:nth-child(5) {
+        animation-delay: 0.4s;
+        height: 40%;
+      }
+      @keyframes wave {
+        0%,
+        100% {
+          transform: scaleY(0.5);
+          opacity: 0.6;
         }
-        .loading-ring::before, .loading-ring::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        50% {
+          transform: scaleY(1);
+          opacity: 1;
         }
-        .loading-ring::before {
-            width: 100%; height: 100%;
-            border: 3px solid transparent;
-            border-top-color: #ef50a8;
-            box-shadow: 0 0 20px rgba(239, 80, 168, 0.5), inset 0 0 20px rgba(239, 80, 168, 0.1);
+      }
+      .loading-text {
+        margin-top: 30px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        letter-spacing: 4px;
+        animation: fade-pulse 2s ease-in-out infinite;
+      }
+      @keyframes fade-pulse {
+        0%,
+        100% {
+          opacity: 0.5;
         }
+        50% {
+          opacity: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .loading-ring::before,
         .loading-ring::after {
-            width: 85%; height: 85%;
-            border: 2px solid transparent;
-            border-bottom-color: #ff8fda;
-            animation-direction: reverse;
-            animation-duration: 1.5s;
-            box-shadow: 0 0 15px rgba(255, 143, 218, 0.4);
-        }
-        @keyframes pulse-ring {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loading-wave {
-            position: absolute;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            height: 30px;
+          animation: none;
+          border: 3px solid #ef50a8;
         }
         .loading-wave span {
-            display: block; width: 4px; height: 100%;
-            background: linear-gradient(180deg, #ef50a8, #ff8fda);
-            border-radius: 2px;
-            animation: wave 1s ease-in-out infinite;
-        }
-        .loading-wave span:nth-child(1) { animation-delay: 0s; height: 40%; }
-        .loading-wave span:nth-child(2) { animation-delay: 0.1s; height: 70%; }
-        .loading-wave span:nth-child(3) { animation-delay: 0.2s; height: 100%; }
-        .loading-wave span:nth-child(4) { animation-delay: 0.3s; height: 70%; }
-        .loading-wave span:nth-child(5) { animation-delay: 0.4s; height: 40%; }
-        @keyframes wave {
-            0%, 100% { transform: scaleY(0.5); opacity: 0.6; }
-            50% { transform: scaleY(1); opacity: 1; }
+          animation: none;
+          height: 50%;
         }
         .loading-text {
-            margin-top: 30px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-            letter-spacing: 4px;
-            animation: fade-pulse 2s ease-in-out infinite;
+          animation: none;
+          opacity: 0.7;
         }
-        @keyframes fade-pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .loading-ring::before, .loading-ring::after { animation: none; border: 3px solid #ef50a8; }
-            .loading-wave span { animation: none; height: 50%; }
-            .loading-text { animation: none; opacity: 0.7; }
-        }
+      }
 
-        /* ---------------- 原有样式 ---------------- */
-        /* 所有图标强制变白（优先级拉满） */
-        .aplayer .aplayer-icon path,
-        .aplayer .aplayer-info .aplayer-controller .aplayer-time .aplayer-icon path,
-        .aplayer .aplayer-pic .aplayer-button path {
-            fill: #ffffff !important;
-        }
-        .aplayer .aplayer-icon:hover path {
-            fill: #ffffff !important;
-            opacity: 1 !important;
-        }
-        #anMusic-page meting-js .aplayer .aplayer-body .aplayer-info .aplayer-controller .aplayer-time .aplayer-time-inner {
-            margin-top: 0 !important;
-            padding-top: 10px;
-        }
+      /* ---------------- 原有样式 ---------------- */
+      /* 所有图标强制变白（优先级拉满） */
+      .aplayer .aplayer-icon path,
+      .aplayer
+        .aplayer-info
+        .aplayer-controller
+        .aplayer-time
+        .aplayer-icon
+        path,
+      .aplayer .aplayer-pic .aplayer-button path {
+        fill: #ffffff !important;
+      }
+      .aplayer .aplayer-icon:hover path {
+        fill: #ffffff !important;
+        opacity: 1 !important;
+      }
+      #anMusic-page
+        meting-js
+        .aplayer
+        .aplayer-body
+        .aplayer-info
+        .aplayer-controller
+        .aplayer-time
+        .aplayer-time-inner {
+        margin-top: 0 !important;
+        padding-top: 10px;
+      }
 
-        /* 1. 强制系统 UI 为白色，适配暗色背景 */
-        :root {
-            --heo-main: #ef50a8;
-            --white-text: #ffffff;
-        }
+      /* 1. 强制系统 UI 为白色，适配暗色背景 */
+      :root {
+        --heo-main: #ef50a8;
+        --white-text: #ffffff;
+      }
 
-        body {
-            background: #0d0d0d !important;
-            margin: 0;
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            color: var(--white-text) !important;
-        }
+      body {
+        background: #0d0d0d !important;
+        margin: 0;
+        overflow: hidden;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        color: var(--white-text) !important;
+      }
 
-        /* 2. 全屏高斯模糊背景 */
-        #an_music_bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background-position: center;
-            background-size: cover;
-            filter: blur(60px) brightness(0.5); /* 提升亮度以适配 */
-            transition: background-image 1s ease-in-out;
-            transform: scale(1.1);
-        }
+      /* 2. 全屏高斯模糊背景 */
+      #an_music_bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background-position: center;
+        background-size: cover;
+        filter: blur(60px) brightness(0.5); /* 提升亮度以适配 */
+        transition: background-image 1s ease-in-out;
+        transform: scale(1.1);
+      }
 
-        /* 主布局 */
-        body.single-music-mode #anMusic-page {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+      /* 主布局 */
+      body.single-music-mode #anMusic-page {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-        body.single-music-mode .aplayer {
-            background: transparent !important;
-            box-shadow: none !important;
-            margin: 0 !important;
-            width: 100%;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-        }
+      body.single-music-mode .aplayer {
+        background: transparent !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: 100%;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+      }
 
-        body.single-music-mode .aplayer-body {
-            width: 100% !important;
-            display: flex;
-            flex-direction: column !important; /* 内部垂直堆叠 */
-            align-items: center;
-        }
+      body.single-music-mode .aplayer-body {
+        width: 100% !important;
+        display: flex;
+        flex-direction: column !important; /* 内部垂直堆叠 */
+        align-items: center;
+      }
 
-        /* 封面 */
-        body.single-music-mode .aplayer-pic {
-            width: min(45vw, 220px) !important;
-            height: min(45vw, 220px) !important;
-            border-radius: 12px !important;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6) !important;
-            margin: 0 auto 30px auto !important;
-        }
+      /* 封面 */
+      body.single-music-mode .aplayer-pic {
+        width: min(45vw, 220px) !important;
+        height: min(45vw, 220px) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+        margin: 0 auto 30px auto !important;
+      }
 
-        /* 信息 */
-        body.single-music-mode .aplayer-info {
-            width: 100% !important;
-            text-align: center;
-            padding: 0 !important;
-            margin: 0 !important;
-            background: transparent !important;
-        }
+      /* 信息 */
+      body.single-music-mode .aplayer-info {
+        width: 100% !important;
+        text-align: center;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+      }
 
-        body.single-music-mode .aplayer-title {
-            font-size: 20px !important;
-        }
+      body.single-music-mode .aplayer-title {
+        font-size: 20px !important;
+      }
 
-        body.single-music-mode .aplayer-author {
-            color: rgba(255,255,255,0.7) !important;
-        }
+      body.single-music-mode .aplayer-author {
+        color: rgba(255, 255, 255, 0.7) !important;
+      }
 
-        /* 歌词区域 */
-        body.single-music-mode .aplayer-lrc {
-            height: 55vh !important;
-            width: 90% !important;
-            margin: 0 auto;
-            overflow: hidden;
-            mask-image: linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
-        }
+      /* 歌词区域 */
+      body.single-music-mode .aplayer-lrc {
+        height: 55vh !important;
+        width: 90% !important;
+        margin: 0 auto;
+        overflow: hidden;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          #000 15%,
+          #000 85%,
+          transparent
+        );
+      }
 
-        .aplayer-lrc-contents {
-            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+      .aplayer-lrc-contents {
+        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
 
-        body.single-music-mode .aplayer-lrc p {
-            font-size: var(--lrc-size) !important;
-            color: rgba(255,255,255,0.5) !important;
-            min-height: auto; /* 移除之前的固定最小高度 */
-            margin: 15px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;      /* 确保文本居中 */
-            width: 100%;             /* 限制宽度 */
-            padding: 0 10px;         /* 增加两侧内边距防止贴边 */
-            box-sizing: border-box;
-        }
+      body.single-music-mode .aplayer-lrc p {
+        font-size: var(--lrc-size) !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+        min-height: auto; /* 移除之前的固定最小高度 */
+        margin: 15px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center; /* 确保文本居中 */
+        width: 100%; /* 限制宽度 */
+        padding: 0 10px; /* 增加两侧内边距防止贴边 */
+        box-sizing: border-box;
+      }
 
-        /* 可以适当增加翻译和主歌词的间距 */
-        body.single-music-mode .aplayer-lrc span.lrc-trans {
-            font-size: var(--lrc-trans-size) !important;
-            opacity: 0.7;
-            margin-top: 6px;         /* 增加这行，让原歌词和翻译拉开一点距离 */
-        }
+      /* 可以适当增加翻译和主歌词的间距 */
+      body.single-music-mode .aplayer-lrc span.lrc-trans {
+        font-size: var(--lrc-trans-size) !important;
+        opacity: 0.7;
+        margin-top: 6px; /* 增加这行，让原歌词和翻译拉开一点距离 */
+      }
 
-        /* 高亮 */
-        body.single-music-mode .aplayer-lrc .aplayer-lrc-current {
-            font-size: var(--lrc-active-size) !important;
-            color: #fff !important;
-            font-weight: bold;
-            transform: scale(1.05);
-        }
+      /* 高亮 */
+      body.single-music-mode .aplayer-lrc .aplayer-lrc-current {
+        font-size: var(--lrc-active-size) !important;
+        color: #fff !important;
+        font-weight: bold;
+        transform: scale(1.05);
+      }
 
-        /* 控制条 */
+      /* 控制条 */
+      body.single-music-mode .aplayer-controller {
+        margin-top: 20px;
+        width: 80%;
+      }
+
+      /* 移动端 */
+      @media (max-width: 768px) {
         body.single-music-mode .aplayer-controller {
-            margin-top: 20px;
-            width: 80%;
+          width: 95%;
         }
 
-        /* 移动端 */
-        @media (max-width:768px){
-            body.single-music-mode .aplayer-controller{
-                width:95%;
-            }
-
-            :root {
-                --lrc-size: 16px;
-                --lrc-active-size: 20px;
-                --lrc-trans-size: 13px;
-            }
-
-            /* 修复移动端时间显示 - 让时间和分隔符在一行 */
-            body.single-music-mode .aplayer-time {
-                display: flex !important;
-                align-items: center !important;
-                gap: 0 !important;
-            }
-            body.single-music-mode .aplayer-time .aplayer-time-inner {
-                display: inline-flex !important;
-                align-items: center !important;
-                padding-top: 0 !important;
-                margin-top: 0 !important;
-            }
-            body.single-music-mode .aplayer-time .aplayer-time-separator {
-                display: inline !important;
-                margin: 0 2px;
-            }
+        :root {
+          --lrc-size: 16px;
+          --lrc-active-size: 20px;
+          --lrc-trans-size: 13px;
         }
 
-        .aplayer svg {
-            color: white;
+        /* 修复移动端时间显示 - 让时间和分隔符在一行 */
+        body.single-music-mode .aplayer-time {
+          display: flex !important;
+          align-items: center !important;
+          gap: 0 !important;
         }
+        body.single-music-mode .aplayer-time .aplayer-time-inner {
+          display: inline-flex !important;
+          align-items: center !important;
+          padding-top: 0 !important;
+          margin-top: 0 !important;
+        }
+        body.single-music-mode .aplayer-time .aplayer-time-separator {
+          display: inline !important;
+          margin: 0 2px;
+        }
+      }
+
+      .aplayer svg {
+        color: white;
+      }
     </style>
-</head>
+  </head>
 
-<body class="single-music-mode">
-<!-- 加载动画 -->
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-ring">
+  <body class="single-music-mode">
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-ring">
         <div class="loading-wave">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
+      </div>
+      <div class="loading-text">正在加载</div>
     </div>
-    <div class="loading-text">正在加载</div>
-</div>
 
-<div id="an_music_bg"></div>
-<div id="anMusic-page">
-    <div id="anMusic-page-meting"></div>
-</div>
+    <div id="an_music_bg"></div>
+    <div id="anMusic-page">
+      <div id="anMusic-page-meting"></div>
+    </div>
 
-<script src="assets/libs/aplayer/APlayer.min.js"></script>
+    <script src="assets/libs/aplayer/APlayer.min.js"></script>
 
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const musicId = urlParams.get('id') || '2016139765';
-    const server = urlParams.get('server') || 'netease';
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const musicId = urlParams.get("id") || "2016139765";
+      const server = urlParams.get("server") || "netease";
 
-    let lrcData = [];
+      let lrcData = [];
 
-    /* 隐藏加载动画 */
-    function hideLoading() {
-        const overlay = document.getElementById('loadingOverlay');
+      /* 隐藏加载动画 */
+      function hideLoading() {
+        const overlay = document.getElementById("loadingOverlay");
         if (overlay) {
-            overlay.classList.add('hidden');
-            setTimeout(() => overlay.remove(), 600);
+          overlay.classList.add("hidden");
+          setTimeout(() => overlay.remove(), 600);
         }
-    }
+      }
 
-    /* 解析歌词 */
-    function parseLrc(lrcText) {
-        const container = document.querySelector('.aplayer-lrc-contents');
+      /* 解析歌词 */
+      function parseLrc(lrcText) {
+        const container = document.querySelector(".aplayer-lrc-contents");
         if (!container) return;
 
         lrcData = [];
-        let html = '';
+        let html = "";
 
-        lrcText.split('\n').forEach(line => {
-            let match = line.match(/\[(\d+):(\d+):(\d+)\](.*)/);
-            let time, text;
+        lrcText.split("\n").forEach((line) => {
+          let match = line.match(/\[(\d+):(\d+):(\d+)\](.*)/);
+          let time, text;
 
+          if (match) {
+            time =
+              parseInt(match[1]) * 60 +
+              parseInt(match[2]) +
+              parseInt(match[3]) / 100;
+            text = match[4].trim();
+          } else {
+            match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
             if (match) {
-                time = parseInt(match[1])*60 + parseInt(match[2]) + parseInt(match[3])/100;
-                text = match[4].trim();
-            } else {
-                match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
-                if (match) {
-                    time = parseInt(match[1])*60 + parseFloat(match[2]);
-                    text = match[3].trim();
-                }
+              time = parseInt(match[1]) * 60 + parseFloat(match[2]);
+              text = match[3].trim();
+            }
+          }
+
+          if (match && text) {
+            let main = text;
+            let trans = "";
+            const split = text.match(/(.*)[(\uff08](.*)[)\uff09]/);
+            if (split) {
+              main = split[1].trim();
+              trans = split[2].trim();
             }
 
-            if (match && text) {
-                let main = text;
-                let trans = "";
-                const split = text.match(/(.*)[(\uff08](.*)[)\uff09]/);
-                if (split) {
-                    main = split[1].trim();
-                    trans = split[2].trim();
-                }
-
-                lrcData.push({time});
-                html += `<p>${main}${trans ? `<span class="lrc-trans">${trans}</span>`:''}</p>`;
-            }
+            lrcData.push({ time });
+            html += `<p>${main}${trans ? `<span class="lrc-trans">${trans}</span>` : ""}</p>`;
+          }
         });
 
         container.innerHTML = html;
-    }
+      }
 
-    /* 居中滚动 */
-    function syncLrc(currentTime) {
-        const container = document.querySelector('.aplayer-lrc-contents');
-        const wrapper = document.querySelector('.aplayer-lrc');
+      /* 居中滚动 */
+      function syncLrc(currentTime) {
+        const container = document.querySelector(".aplayer-lrc-contents");
+        const wrapper = document.querySelector(".aplayer-lrc");
         if (!container || !wrapper) return;
 
-        const ps = container.querySelectorAll('p');
+        const ps = container.querySelectorAll("p");
         if (!ps.length) return;
 
         let activeIndex = 0;
         for (let i = 0; i < lrcData.length; i++) {
-            if (currentTime >= lrcData[i].time) activeIndex = i;
-            else break;
+          if (currentTime >= lrcData[i].time) activeIndex = i;
+          else break;
         }
 
         const currentP = ps[activeIndex];
         if (!currentP) return;
 
-        ps.forEach(el => el.classList.remove('aplayer-lrc-current'));
-        currentP.classList.add('aplayer-lrc-current');
+        ps.forEach((el) => el.classList.remove("aplayer-lrc-current"));
+        currentP.classList.add("aplayer-lrc-current");
 
         const wrapperHeight = wrapper.clientHeight;
         const offsetTop = currentP.offsetTop;
         const currentHeight = currentP.offsetHeight;
 
-        const translateY = wrapperHeight/2 - offsetTop - currentHeight/2 -80;
+        const translateY =
+          wrapperHeight / 2 - offsetTop - currentHeight / 2 - 80;
 
         container.style.transform = `translateY(${translateY}px)`;
-    }
+      }
 
-    /* 字体控制 */
-    function setLrcSize(scale){
+      /* 字体控制 */
+      function setLrcSize(scale) {
         scale = Math.max(0.8, Math.min(1.4, scale));
-        document.documentElement.style.setProperty('--lrc-size', `${19*scale}px`);
-        document.documentElement.style.setProperty('--lrc-active-size', `${24*scale}px`);
-        document.documentElement.style.setProperty('--lrc-trans-size', `${15*scale}px`);
-    }
+        document.documentElement.style.setProperty(
+          "--lrc-size",
+          `${19 * scale}px`,
+        );
+        document.documentElement.style.setProperty(
+          "--lrc-active-size",
+          `${24 * scale}px`,
+        );
+        document.documentElement.style.setProperty(
+          "--lrc-trans-size",
+          `${15 * scale}px`,
+        );
+      }
 
-    /* 自动适配 */
-    function autoScale(){
+      /* 自动适配 */
+      function autoScale() {
         let w = window.innerWidth;
         let scale = 1;
-        if(w < 500) scale = 0.85;
-        else if(w < 768) scale = 0.95;
+        if (w < 500) scale = 0.85;
+        else if (w < 768) scale = 0.95;
         setLrcSize(scale);
-    }
-    window.addEventListener('resize', autoScale);
+      }
+      window.addEventListener("resize", autoScale);
 
-    /* 补丁歌词 */
-    async function fetchPatchLrc(id, ap){
-        try{
-            const res = await fetch(`https://api.injahow.cn/meting/?type=lrc&id=${id}&server=netease`);
-            const text = await res.text();
-            if(text.includes('[')){
-                ap.list.audios[0].lrc = text;
-                parseLrc(text);
-                ap.on('timeupdate', ()=> syncLrc(ap.audio.currentTime));
-            }
-        }catch(e){}
-    }
+      /* 补丁歌词 */
+      async function fetchPatchLrc(id, ap) {
+        try {
+          const res = await fetch(
+            `https://api.injahow.cn/meting/?type=lrc&id=${id}&server=netease`,
+          );
+          const text = await res.text();
+          if (text.includes("[")) {
+            ap.list.audios[0].lrc = text;
+            parseLrc(text);
+            ap.on("timeupdate", () => syncLrc(ap.audio.currentTime));
+          }
+        } catch (e) {}
+      }
 
-    /* 注入 */
-    document.getElementById('anMusic-page-meting').innerHTML =
+      /* 注入 */
+      document.getElementById("anMusic-page-meting").innerHTML =
         `<meting-js id="${musicId}" server="${server}" type="song" lrc-type="3"
-api="https://api.zxbdwy.online/meting/api?server=:server&type=:type&id=:id"></meting-js>`;
+api="https://meting-api.9887665.xyz/api?server=:server&type=:type&id=:id"></meting-js>`;
 
-    function start(){
-        const mJS = document.querySelector('meting-js');
-        if(mJS && mJS.aplayer){
-            const ap = mJS.aplayer;
+      function start() {
+        const mJS = document.querySelector("meting-js");
+        if (mJS && mJS.aplayer) {
+          const ap = mJS.aplayer;
 
-            ap.on('canplay', ()=>{
-                document.getElementById('an_music_bg').style.backgroundImage =
-                    `url("${ap.list.audios[0].cover}")`;
+          ap.on("canplay", () => {
+            document.getElementById("an_music_bg").style.backgroundImage =
+              `url("${ap.list.audios[0].cover}")`;
 
-                fetchPatchLrc(musicId, ap);
-                autoScale();
-                hideLoading();
-            });
-            ap.on('timeupdate', () => {
-                const playedBar = document.querySelector('.aplayer-played');
-                if (playedBar && ap.audio.duration) {
-                    const percent = (ap.audio.currentTime / ap.audio.duration) * 100;
-                    playedBar.style.width = `${percent}%`;
-                }
-            });
-        }else{
-            setTimeout(start,200);
+            fetchPatchLrc(musicId, ap);
+            autoScale();
+            hideLoading();
+          });
+          ap.on("timeupdate", () => {
+            const playedBar = document.querySelector(".aplayer-played");
+            if (playedBar && ap.audio.duration) {
+              const percent = (ap.audio.currentTime / ap.audio.duration) * 100;
+              playedBar.style.width = `${percent}%`;
+            }
+          });
+        } else {
+          setTimeout(start, 200);
         }
-    }
+      }
 
-    const script = document.createElement('script');
-    script.src = "assets/libs/Meting.min.js";
-    script.onload = start;
-    document.body.appendChild(script);
-</script>
-
-</body>
+      const script = document.createElement("script");
+      script.src = "assets/libs/Meting.min.js";
+      script.onload = start;
+      document.body.appendChild(script);
+    </script>
+  </body>
 </html>
